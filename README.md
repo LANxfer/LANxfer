@@ -1,104 +1,113 @@
-# LANxfer - Offline LAN File Sharing
+# LANxfer
 
-## 📌 Introduction
-LANxfer is a lightweight, cross-platform tool for offline file sharing over a **local network (LAN/Wi-Fi)** without needing internet access. It allows devices to transfer files seamlessly using various offline networking methods. Its primary purpose is to cater to users and organizations
-that prioritize data protection and want to avoid the vulnerabilities associated with traditional
-file-sharing methods.
+LANxfer is a simple, secure file transfer application designed for local area networks (LANs). It allows users to upload encrypted files, share them with specific devices or everyone on the network, and download them with automatic decryption—all within a cyberpunk-themed web interface. Built with Flask (Python) and JavaScript, it uses AES-256 encryption to ensure file security.
 
-## 🚀 Features
-- Peer-to-peer file transfer over a local network.
-- No internet required; works entirely offline.
-- Drag-and-drop interface for easy file sharing.
-- Cross-platform support (Windows, Linux, macOS, Android via browser).
-- Secure and private; no cloud storage or external APIs involved.
+## Features
+- *File Upload*: Drag and drop or select files to upload, encrypted with AES-256.
+- *Recipient Selection*: Share files with "Everyone" or a specific IP address on the LAN.
+- *IP Tracking*: Dynamically tracks active devices on the network with a timeout mechanism (IPs are removed after 30 seconds of inactivity).
+- *File Listing*: Displays available files with sorting options (name, size, modified date).
+- *Download & Decrypt*: Downloads files and decrypts them client-side using CryptoJS.
+- *Cyberpunk UI*: A sleek, neon-green-on-black interface inspired by cyberpunk aesthetics.
 
----
+## Prerequisites
+- Python 3.6+
+- Node.js (optional, for development convenience)
+- A local network with devices to test file sharing
 
-## 📂 Setup and Installation
-### 1️⃣ Prerequisites
-- **Python 3.7+** installed
-- **Flask** (Install using `pip install flask`)
-- A device with a **Wi-Fi adapter**
+## Installation
 
-### 2️⃣ Clone the Repository
-```sh
-    git clone https://github.com/yourusername/LANxfer.git
-    cd LANxfer
-```
+1. *Clone the Repository*
+   bash
+   git clone https://github.com/yourusername/LANxfer.git
+   cd LANxfer
+   
 
-### 3️⃣ Run the Application
-```sh
-    python app.py
-```
-This starts the server on your local machine.
+2. *Install Python Dependencies*
+   Install the required Python packages using pip:
+   bash
+   pip install Flask pycryptodome
+   
+   - Flask: Web framework for the server.
+   - pycryptodome: Provides AES encryption functionality.
 
----
+3. *Project Structure*
+   Ensure your directory looks like this:
 
-## 📡 Connecting Devices Without Internet
-### Method 1: **Using Laptop Hotspot (Windows/Mac/Linux)**
-If your laptop supports **creating a hotspot**, follow these steps:
+   
+   LANxfer/
+   ├── app.py
+   ├── static/
+   │   ├── script.js
+   │   └── styles.css
+   ├── templates/
+   │   └── index.html
+   ├── uploads/ (created automatically on first run)
+   └── README.md
+   
 
-1. **Enable Hotspot on Your Laptop:**
-   - **Windows:** `Settings → Network & Internet → Mobile Hotspot → Turn On`
-   - **Mac:** `System Preferences → Sharing → Internet Sharing → Wi-Fi`
-   - **Linux:** `Settings → Wi-Fi → Turn On Hotspot`
+4. *Run the Server*
+   Start the Flask application:
+   bash
+   python app.py
+   
+   The server will run on http://0.0.0.0:5000 (accessible from any device on your LAN).
 
-2. **Connect Other Devices** to the newly created Wi-Fi hotspot.
-3. **Find the Local IP Address** of your server:
-   ```sh
-   ipconfig (Windows) or ifconfig (Mac/Linux)
-   ```
-   Look for **Wi-Fi IPv4 Address** (e.g., `192.168.137.1`).
+## Usage
 
-4. **Access the File Sharing UI** from another device:
-   ```
-   http://<your-ip>:5000
-   ```
-   Example: `http://192.168.137.1:5000`
+1. *Access the Web Interface*
+   - Open a browser on any device in the same LAN and navigate to http://<server-ip>:5000 (replace <server-ip> with the IP of the machine running app.py, e.g., http://192.168.1.100:5000).
 
----
+2. *Upload a File*
+   - Drag a file into the drop zone or click "Choose File" to select one.
+   - Select a recipient from the dropdown (default: "Everyone") or a specific IP.
+   - Click "Upload" to encrypt and send the file to the server.
 
-### Method 2: **Using Wi-Fi Direct (Peer-to-Peer Mode)**
-If your laptop **does not support a hotspot**, you can use **Wi-Fi Direct** to establish a local connection.
+3. *Refresh IPs*
+   - Click "Refresh IPs" next to the recipient dropdown to update the list of active devices. IPs disappear after 30 seconds of inactivity.
 
-1. **Enable Wi-Fi Direct on Your Devices:**
-   - **Windows:** `Settings → Devices → Bluetooth & Other Devices → Wi-Fi Direct`
-   - **Android:** `Settings → Wi-Fi → Advanced → Wi-Fi Direct`
-2. **Connect Other Devices to the Host Laptop.**
-3. **Find the Local IP Address** using `ipconfig` or `ifconfig`.
-4. **Access the Web UI** using `http://<your-ip>:5000`.
+4. *View and Download Files*
+   - The table below lists files you’re authorized to see (those addressed to your IP or "Everyone").
+   - Click "Download" to retrieve and automatically decrypt a file.
 
----
+## How It Works
 
-### Method 3: **Using Mobile Hotspot (No Internet Needed)**
-1. **Turn on Mobile Hotspot on Your Phone:**
-   - **Android:** `Settings → Network & Internet → Hotspot & Tethering → Turn On Wi-Fi Hotspot`
-   - **iPhone:** `Settings → Personal Hotspot → Turn On`
-2. **Connect your laptop and other devices** to the mobile hotspot.
-3. **Find the Local IP Address** using `ipconfig` or `ifconfig`.
-4. **Access the File Sharing UI**:
-   ```
-   http://<your-ip>:5000
-   ```
-   Example: `http://192.168.43.1:5000`
+### Server (app.py)
+- *Encryption*: Files are encrypted with AES-256 in CBC mode using a pre-shared key (SECRET_KEY).
+- *IP Management*: Tracks active IPs with timestamps, removing them after 30 seconds (TIMEOUT_MINUTES = 0.5) of inactivity via a background thread.
+- *Endpoints*:
+  - /: Serves the main page and tracks visitors.
+  - /get_ips: Returns active IPs, updating the requester’s timestamp.
+  - /get_files: Lists files for the requester, sorted by name, size, or date.
+  - /upload: Handles file uploads and encryption.
+  - /download/<filename>: Serves encrypted files with access control.
 
----
+### Client (index.html, styles.css, script.js)
+- *UI*: Cyberpunk-themed interface with drag-and-drop support and a sortable file table.
+- *JavaScript*: Uses CryptoJS for client-side decryption, fetches IPs manually via a "Refresh IPs" button, and handles file uploads/downloads.
+- *Timeout*: IPs are refreshed only on page load or button click, relying on the server’s timeout to remove inactive devices.
 
-## 📌 Troubleshooting
-### **1. Unable to Start the Hotspot on Windows?**
-   - Open Command Prompt as Admin and run:
-     ```sh
-     netsh wlan set hostednetwork mode=allow ssid=LANxfer key=12345678
-     netsh wlan start hostednetwork
-     ```
-   - If this fails, try using Wi-Fi Direct instead.
+## Security Notes
+- *Pre-shared Key*: The AES key (ThisIsASecretKey1234567890123456) is hardcoded in both app.py and script.js. In a production environment, distribute this securely and consider generating unique keys per session.
+- *Encryption*: Files are encrypted server-side and decrypted client-side, ensuring data privacy over the LAN.
+- *Access Control*: Downloads are restricted to the intended recipient IP or "Everyone."
 
-### **2. Cannot Access Web UI on Other Devices?**
-   - Ensure all devices are connected to the **same local network**.
-   - Run `ipconfig` or `ifconfig` and confirm you are using the **correct IP address**.
-   - Check if any firewall is **blocking Flask (Python)**.
+## Configuration
+- *Timeout*: Adjust TIMEOUT_MINUTES in app.py (currently 0.5 minutes = 30 seconds) to change how long IPs remain active without requests.
+- *Port*: Modify app.run(port=5000) in app.py if you need a different port.
 
-### **3. Getting a 404 Error on File Upload?**
-   - Make sure your `static` folder contains `script.js`.
-   - Restart the Flask server and clear the browser cache.
+## Limitations
+- *LAN Only*: Designed for local networks; not intended for internet use without additional security (e.g., HTTPS).
+- *No Persistence*: File and IP data are stored in memory and lost on server restart. Add a database for persistence if needed.
+- *No Authentication*: Relies on IP-based access control; no user login system.
 
+## Troubleshooting
+- *IPs Not Showing*: Ensure devices are on the same LAN and making requests (e.g., loading the page or clicking "Refresh IPs").
+- *Timeout Too Fast*: If IPs disappear too quickly, increase TIMEOUT_MINUTES in app.py.
+- *File Errors*: Check the server console for logs (e.g., file not found, access denied).
+
+## Contributing
+Feel free to fork this repository, submit issues, or send pull requests to enhance LANxfer!
+
+## License
+This project is open-source under the [MIT License](LICENSE).
